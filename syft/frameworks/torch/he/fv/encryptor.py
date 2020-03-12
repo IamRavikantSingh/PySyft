@@ -14,7 +14,7 @@ def encrypt(PK, message):
     t = variables.t
 
     delta = q // t  # floor of q/t
-    u = np.random.randint(q, size=(n, n), dtype=np.int64).astype(datatype)
+    u = np.random.randint(q, size=n, dtype=np.int64).astype(datatype)
     e1 = np.random.randint(q, size=n, dtype=np.int64).astype(datatype)
     e2 = np.random.randint(q, size=n, dtype=np.int64).astype(datatype)
 
