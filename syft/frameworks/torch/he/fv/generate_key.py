@@ -52,9 +52,11 @@ def keygen():
     q = variables.q
     l = ceil(log2(q))
     n = k
-    m = n * l
+    variables.m = n * l
+    m = variables.m
+    print("q value", q)
     SK = np.random.randint(q, size=n, dtype=np.int64).astype(datatype)
     e = np.rint(np.random.normal(scale=1.0, size=m)).astype(np.int).astype(datatype)
-    a = np.random.randint(q, size=(n, m), dtype=np.int64).astype(datatype)
+    a = np.random.randint(q, size=(m, n), dtype=np.int64).astype(datatype)
     PK = [-(np.dot(a, SK) + e) % q, a]
     return [SK, PK]
