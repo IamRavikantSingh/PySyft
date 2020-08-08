@@ -1,3 +1,4 @@
+import copy
 import math
 from functools import reduce
 
@@ -13,6 +14,39 @@ from syft.frameworks.torch.he.fv.util.global_variable import POLY_MOD_DEGREE_MIN
 
 
 class Context:
+    def __init__(self, params):
+        # Validation of params provided for the encryption scheme.
+        self.key_param_id = params.param_id
+        self.context_data_map = {}
+        self.context_data_map[self.key_param_id] = ContextData(params)
+
+        if len(params.coeff_modulus) > 1:
+            self.first_param_id = self.create_next_context_data(self.key_param_id)
+        else:
+            self.first_param_id = self.key_param_id
+        self.last_param_id = self.first_param_id
+
+        prev_parms_id = self.first_param_id
+        while len(self.context_data_map[prev_parms_id].param.coeff_modulus) > 1:
+            prev_parms_id = self.create_next_context_data(prev_parms_id)
+            self.last_param_id = prev_parms_id
+
+    def create_next_context_data(self, prev_parms_id):
+        next_parms = copy.deepcopy(self.context_data_map[prev_parms_id].param)
+        next_coeff_modulus = next_parms.coeff_modulus[:-1]
+        next_parms.set_coeff_modulus(next_coeff_modulus)
+        next_param_id = next_parms.param_id
+
+        assert next_param_id != prev_parms_id
+
+        next_context_data = ContextData(next_parms)
+        self.context_data_map[next_param_id] = next_context_data
+        self.context_data_map[prev_parms_id].next_context_id = next_param_id
+        self.context_data_map[next_param_id].prev_context_id = prev_parms_id
+        return next_param_id
+
+
+class ContextData:
     """A class used as for holding and easily supplying of all the general
     parameters required throughout the implementation.
 
@@ -23,17 +57,13 @@ class Context:
         rns_tool: A RNSTool class instance.
     """
 
-    def __init__(self, params):
-
-        # Validation of params provided for the encryption scheme.
-        self.validate(params)
-
-        self.param = params
-
-        self.rns_tool = RNSTool(params)
+    def __init__(self, param, prev_context_id=None, next_context_id=None):
+        self.validate(param)
+        self.param = param
+        self.prev_context_id = prev_context_id
+        self.next_context_id = next_context_id
 
     def validate(self, params):
-
         # The number of coeff moduli is restricted to 62
         if (
             len(params.coeff_modulus) > COEFF_MOD_COUNT_MAX
@@ -97,3 +127,5 @@ class Context:
         # A list containing values of coeff_mod[i] / plain_mod for one time computation
         # and useful in encryption process.
         self.coeff_div_plain_modulus = [x / params.plain_modulus for x in params.coeff_modulus]
+
+        self.rns_tool = RNSTool(params)

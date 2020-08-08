@@ -8,5 +8,6 @@ class CipherText:
         data: A 3-dim list representing ciphertext values.
     """
 
-    def __init__(self, data):
+    def __init__(self, data, param_id):
         self.data = data
+        self.param_id = param_id
