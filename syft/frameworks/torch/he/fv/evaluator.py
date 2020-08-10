@@ -405,7 +405,8 @@ class Evaluator:
 
             local_small_poly_0 = copy.deepcopy(target[i])
 
-            temp_poly = [[[]] * rns_mod_count, [[]] * rns_mod_count]
+            temp_poly = [[[0] for x in range(rns_mod_count)] , [[0] for x in range(rns_mod_count)]]
+
             for j in range(rns_mod_count):
                 index = key_mod_count - 1 if j == decomp_mod_count else j
 
